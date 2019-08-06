@@ -1,0 +1,10 @@
+{
+    "id": "zk-web",
+    "cpu": 0.01,
+    "mem": 256,
+    "instances": 1,
+    "hostname": "zk-web.stage.domain",
+    "default_node": "zk.stage.domain:2181",
+    "env": "stage",
+    "haproxy_0_vhost": "zk-web.stage.domain"
+}

@@ -1,0 +1,10 @@
+{
+  "id": "grafana",
+  "cpu": 0.5,
+  "mem": 512,
+  "instances": 1,
+  "version": "latest",
+  "hostname": "grafana.dev.domain",
+  "haproxy_group": "dev",
+  "haproxy_0_vhost": "grafana.dev.domain"
+}

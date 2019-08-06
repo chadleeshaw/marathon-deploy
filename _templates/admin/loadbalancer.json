@@ -1,0 +1,63 @@
+{
+    "id": "/admin/lb-{{ template.env }}",
+    "cmd": "echo \"$MARATHON_AUTH_CREDENTIALS\" > /etc/marathon-credentials\n\n/marathon-lb/run sse -m https://marathon.{{ template.datacenter }} --group {{ template.env }} --health-check --marathon-auth-credential-file /etc/marathon-credentials",
+    "cpus": {{ template.cpu }},
+    "mem": {{ template.mem }},
+    "disk": 0,
+    "instances": {{ template.instances }},
+    "acceptedResourceRoles": [
+      "*"
+    ],
+    "container": {
+      "type": "DOCKER",
+      "volumes": [
+        {
+          "containerPath": "/usr/local/lib/python3.5/dist-packages/requests/cacert.pem",
+          "hostPath": "/etc/ssl/certs/ca-bundle.crt",
+          "mode": "RO"
+        }
+      ],
+      "docker": {
+        "image": "mesosphere/marathon-lb:v1.8.0",
+        "network": "HOST",
+        "portMappings": [],
+        "privileged": true,
+        "parameters": [
+          {
+            "key": "hostname",
+            "value": "{{ template.hostname }}"
+          },
+          {
+            "key": "net",
+            "value": "macvlan"
+          },
+          {
+            "key": "ip",
+            "value": "{{ template.ip }}"
+          }
+        ],
+        "forcePullImage": true
+      }
+    },
+    "env": {
+      "PORTS": "8068",
+      "ATTACH_WEAVE": "1",
+      "MARATHON_AUTH_CREDENTIALS": "{{ template.marathon_creds }}"
+    },
+    "healthChecks": [
+      {
+        "gracePeriodSeconds": 300,
+        "intervalSeconds": 10,
+        "timeoutSeconds": 5,
+        "maxConsecutiveFailures": 3,
+        "port": 9090,
+        "path": "/_haproxy_health_check",
+        "protocol": "HTTP",
+        "ignoreHttp1xx": false
+      }
+    ],
+    "upgradeStrategy": {
+      "minimumHealthCapacity": 1,
+      "maximumOverCapacity": 0
+    }
+  }

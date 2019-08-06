@@ -1,0 +1,12 @@
+{
+    "id": "loadbalancer",
+    "cpu": 0.1,
+    "mem": 256,
+    "instances": 1,
+    "env": "dev",
+    "datacenter": "dev.domain",
+    "hostname": "lb-dev.domain",
+    "ip": "192.168.1.10",
+    "marathon_creds": "user:pass"
+
+}

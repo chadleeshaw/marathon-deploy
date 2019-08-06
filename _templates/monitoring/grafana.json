@@ -1,0 +1,65 @@
+{
+  "id": "/monitoring/grafana",
+  "cpus": {{ template.cpu }},
+  "mem": {{ template.mem }},
+  "disk": 0,
+  "instances": {{ template.instances }},
+  "acceptedResourceRoles": [
+    "*"
+  ],
+  "container": {
+    "type": "DOCKER",
+    "volumes": [],
+    "docker": {
+      "image": "grafana/grafana:{{ template.version }}",
+      "network": "BRIDGE",
+      "portMappings": [
+        {
+          "containerPort": 8080,
+          "hostPort": 0,
+          "protocol": "tcp",
+          "name": "http",
+          "labels": {}
+        }
+      ],
+      "privileged": false,
+      "parameters": [
+        {
+          "key": "hostname",
+          "value": "{{ template.hostname }}"
+        }
+      ],
+      "forcePullImage": true
+    }
+  },
+  "env": {
+    "GF_PATHS_DATA_notused": "/data",
+    "GF_SERVER_HTTP_PORT": "8080",
+    "GF_SERVER_DOMAIN": "{{ template.haproxy_0_vhost }}",
+    "GF_SERVER_ROOT_URL": "%(protocol)s://%(domain)s/",
+    "GF_PATHS_CONFIG": "",
+    "GF_PATHS_DATA_notused": "/data",
+
+  },
+  "healthChecks": [
+    {
+      "gracePeriodSeconds": 300,
+      "intervalSeconds": 60,
+      "timeoutSeconds": 20,
+      "maxConsecutiveFailures": 3,
+      "portIndex": 0,
+      "path": "/login",
+      "protocol": "HTTP",
+      "ignoreHttp1xx": false
+    }
+  ],
+  "labels": {
+    "HAPROXY_GROUP": "{{ template.haproxy_group }}",
+    "HAPROXY_0_VHOST": "{{ template.haproxy_0_vhost }}",
+    "MARATHON_SINGLE_INSTANCE_APP": "true"
+  },
+  "upgradeStrategy": {
+    "minimumHealthCapacity": 0,
+    "maximumOverCapacity": 0
+  }
+}

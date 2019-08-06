@@ -1,0 +1,56 @@
+{
+  "id": "/admin/zk-web",
+  "cmd": null,
+  "cpus": {{ template.cpu }},
+  "mem": {{ template.mem }},
+  "disk": 0,
+  "instances": {{ template.instances }},
+  "acceptedResourceRoles": ["*"],
+  "container": {
+    "type": "DOCKER",
+    "volumes": [],
+    "docker": {
+      "image": "goodguide/zk-web",
+      "network": "BRIDGE",
+      "portMappings": [
+        {
+          "containerPort": 8080,
+          "hostPort": 0,
+          "protocol": "tcp",
+          "name": "http",
+          "labels": {}
+        }
+      ],
+      "privileged": false,
+      "parameters": [
+        {
+          "key": "hostname",
+          "value": "{{ template.hostname }}"
+        }
+      ],
+      "forcePullImage": true
+    }
+  },
+  "env": {
+    "SERVER_PORT": "8080",
+    "DEFAULT_NODE": "{{ template.default_node }}",
+    "JOOKY": ""
+  },
+  "healthChecks": [
+    {
+      "gracePeriodSeconds": 300,
+      "intervalSeconds": 60,
+      "timeoutSeconds": 20,
+      "maxConsecutiveFailures": 0,
+      "portIndex": 0,
+      "path": "/",
+      "protocol": "HTTP",
+      "ignoreHttp1xx": false
+    }
+  ],
+  "labels": {
+    "HAPROXY_GROUP": "{{ template.env }}",
+    "HAPROXY_0_VHOST": "{{ template.haproxy_0_vhost }}",
+    "HAPROXY_0_BACKEND_HTTP_HEALTHCHECK_OPTIONS": "    option httpchk GET {healthCheckPath} HTTP/1.1\\r\\nHost:{{ template.haproxy_0_vhost }}\n"
+  }
+}
