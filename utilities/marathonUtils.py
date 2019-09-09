@@ -159,7 +159,7 @@ def update_image(env, apps, version, committer=None):
             envList.append(appName)
         if gitConfig('./'):
             if gitStatus('./'):
-                if gitAdd('--all', './'):
+                if gitAdd('./', './'):
                     if gitCommit('{} update to {} \n{} {}'.format(''.join(env), ''.join(version), ','.join(envList),
                                                                   ''.join(committer)), './'):
                         if gitPush('master', './'):
