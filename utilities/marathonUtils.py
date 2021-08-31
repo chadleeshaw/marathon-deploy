@@ -40,7 +40,7 @@ def render_json(deployEnv, envFiles, templateFiles):
         if not os.path.exists(os.path.dirname(outputPath)):
             os.makedirs(os.path.dirname(outputPath))
         appName = os.path.splitext(os.path.basename(outputPath))[0]
-        templateEnv = filter(lambda key_search: key_search['id'] == appName, envJson)[0]
+        templateEnv = list(filter(lambda key_search: key_search['id'] == appName, envJson))[0]
         template = env.get_template(templateFile)
         with open(outputPath, 'w') as f:
             f.write(template.render(template=templateEnv))
@@ -49,7 +49,7 @@ def render_json(deployEnv, envFiles, templateFiles):
 def marathon_request(env, method, uri, data=None):
     '''Build request to Marathon'''
     config = load_json(['./_env/{}/marathon.conf'.format(env)])
-    password = base64.b64decode(json.dumps(config[0].get('password'))).rstrip('\n')
+    password = base64.b64decode(json.dumps(config[0].get('password'))).decode().rstrip('\n')
     auth = ('admin', password)
     headers = {'Content-type': 'application/json'}
     baseUrl = json.dumps(config[0].get('marathon')).strip('"')
@@ -101,15 +101,15 @@ def deploy_apps(env, sync=False):
                 r = marathon_request(env, 'put', '/v2/apps{}?force=true'.format(config['id']),
                                      '{"ipAddress": [], "ports": []}')
             if not sync:
-                print "Deploying {} to {}".format(config['id'], env)
+                print("Deploying {} to {}".format(config['id'], env))
             else:
                 if config.get('instances') >= 1:
                     deployId = get_deploy_id(r)
                     sync_deploy(env, deployId, config['id'])
                 else:
-                    print "Syncronous deploy has zero instances: {}".format(config['id'])
+                    print("Syncronous deploy has zero instances: {}".format(config['id']))
         else:
-            print "Error deploying app {}\n{}".format(config['id'], r.text)
+            print("Error deploying app {}\n{}".format(config['id'], r.text))
 
 
 def instance_check(env, appId):
@@ -150,7 +150,7 @@ def update_image(env, apps, version, committer=None):
                         json.dump(data, f, indent=2)
                         f.truncate()
         except:
-            print "Error updating, image field not in env file"
+            print("Error updating, image field not in env file")
             quit()
     try:
         envList = []
@@ -163,15 +163,15 @@ def update_image(env, apps, version, committer=None):
                     if gitCommit('{} update to {} \n{} {}'.format(''.join(env), ''.join(version), ','.join(envList),
                                                                   ''.join(committer)), './'):
                         if gitPush('master', './'):
-                            print "Git commit worked!"
+                            print("Git commit worked!")
     except:
-        print "Git commit failed :("
+        print("Git commit failed :(")
 
 
 def scale_apps(env, appIds, instances, sync=False):
     for app in appIds:
         r = marathon_request(env, 'put', '/v2/apps/{}?force=true'.format(app), '{"instances":%s}' % ''.join(instances))
-        print 'Scaling {} in {} to {}'.format(app, env, ''.join(instances))
+        print('Scaling {} in {} to {}'.format(app, env, ''.join(instances)))
         if sync:
             deployId = get_deploy_id(r)
             sync_deploy(env, deployId, app)
@@ -179,7 +179,7 @@ def scale_apps(env, appIds, instances, sync=False):
 def restart_apps(env, appIds):
     for app in appIds:
         r = marathon_request(env, 'post', '/v2/apps/{}/restart'.format(app))
-        print 'Restarting {} in {}'.format(app, env)
+        print('Restarting {} in {}'.format(app, env))
 
 def clear_marathon(env, args, delList):
     '''Destroy app/group'''
@@ -194,11 +194,11 @@ def clear_marathon(env, args, delList):
                 if appId:
                     req = marathon_request(env, 'delete', '/v2/apps/{}?force=true'.format(appId[0]))
                     if req.ok:
-                        print "deleting app: {}".format(delete)
+                        print("deleting app: {}".format(delete))
                     else:
-                        print "error deleteing app {}\n{}".format(delete, req.text)
+                        print("error deleteing app {}\n{}".format(delete, req.text))
                 else:
-                    print "Can't destroy {} in {}: not found".format(delete, env)
+                    print("Can't destroy {} in {}: not found".format(delete, env))
         if args == 'group':
             for delete in delList:
                 search = "/{}".format(delete)
@@ -207,11 +207,11 @@ def clear_marathon(env, args, delList):
                 if groupId:
                     req = marathon_request(env, 'delete', '/v2/groups/{}?force=true'.format(str(groupId[0])))
                     if req.ok:
-                        print "deleting group: {}".format(delete)
+                        print("deleting group: {}".format(delete))
                     else:
-                        print "error deleteing group: {}\n{}".format(delete, req.text)
+                        print("error deleteing group: {}\n{}".format(delete, req.text))
                 else:
-                    print "Can't destroy {} in {}: not found".format(delete, env)
+                    print("Can't destroy {} in {}: not found".format(delete, env))
 
 
 def clear_json():
@@ -234,18 +234,18 @@ def sync_deploy(env, deployId, app):
     deploys = marathon_request(env, 'get', '/v2/deployments').json()
     deployIds = [x['id'] for x in deploys]
     if deployId in deployIds:
-        print 'Waiting for {} in {}'.format(app, env)
+        print('Waiting for {} in {}'.format(app, env))
         while deployId in deployIds and retries < maxRetries:
             deploys = marathon_request(env, 'get', '/v2/deployments').json()
             deployIds = [x['id'] for x in deploys]
             retries += 1
             time.sleep(1)
         if retries < maxRetries:
-            print 'Done with {} in {}'.format(app, env)
+            print('Done with {} in {}'.format(app, env))
         else:
-            print 'Max retries met for {} : {}'.format(app, deployId)
+            print('Max retries met for {} : {}'.format(app, deployId))
     else:
-        print 'Deployment not found: {} : {}'.format(app, deployId)
+        print('Deployment not found: {} : {}'.format(app, deployId))
 
 
 def get_deploy_id(response):
@@ -255,7 +255,7 @@ def get_deploy_id(response):
         deployId = rJson.get('deploymentId')
         return deployId
     except requests.exceptions.RequestException as e:
-        print e
+        print(e)
 
 def print_tasks(env, args):
     apps = []
@@ -284,7 +284,7 @@ def print_tasks(env, args):
                 status = 'Deploying'
             t.add_row([env, app['id'], app['container']['docker']['image'], status, app['instances'], app['tasksRunning'], app['tasksHealthy'], app['tasksUnhealthy'],
                     app['tasksStaged']])
-        print t
+        print(t)
     else:
         for app in apps:
             if not app['deployments']:
@@ -293,8 +293,8 @@ def print_tasks(env, args):
                 status = 'Deploying'
             elif app['instances'] == 0:
                 status = 'NotRunning'
-            print {'env': env, 'app': app['id'], 'image': app['container']['docker']['image'], 'status': status, 'instances': app['instances'], 'tasksRunning': app['tasksRunning'],
-                'tasksHealthy': app['tasksHealthy'], 'tasksUnhealthy': app['tasksUnhealthy'], 'tasksStaged': app['tasksStaged']}
+            print({'env': env, 'app': app['id'], 'image': app['container']['docker']['image'], 'status': status, 'instances': app['instances'], 'tasksRunning': app['tasksRunning'],
+                'tasksHealthy': app['tasksHealthy'], 'tasksUnhealthy': app['tasksUnhealthy'], 'tasksStaged': app['tasksStaged']})
 
 
 if __name__ == '__main__':

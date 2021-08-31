@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 from utilities.marathonUtils import *
 import argparse
@@ -10,7 +10,7 @@ logging.basicConfig()
 
 
 def parse_args(args):
-    env = ['dev','stage','prod'
+    env = ['dev','stage','prod']
     group = ['admin', 'monitoring']
 
     parser = argparse.ArgumentParser(description='Marathon Deployment Utility')
@@ -49,7 +49,7 @@ def main(args):
                 render_json(env, envList, templateList)
                 deploy_apps(env)
             else:
-                print "Application not found"
+                print("Application not found")
     ############ Destroy Apps ############
     elif args.CLEAR == True:
         for env in args.env:
@@ -77,7 +77,7 @@ def main(args):
                 render_json(env, envList, templateList)
                 deploy_apps(env)
             else:
-                print "Application not found"
+                print("Application not found")
     ############ Status of tasks ############
     elif args.tasks:
         for env in args.env:
